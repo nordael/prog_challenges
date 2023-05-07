@@ -33,7 +33,7 @@ int main() {
             towers.erase(it); // remove a torre antiga
             towers.insert(cube); // adiciona o cubo à torre
         }
-*    }
+    }
 
     cout << towers.size() << endl;
 
