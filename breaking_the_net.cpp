@@ -22,88 +22,71 @@
  * Após cada cabo de rede arrebentado, imprima o número de componentes.
  **/
 
-#include <bits/stdc++.h>
-
+#include<bits/stdc++.h>
 using namespace std;
 
-#define ullong unsigned long long
+typedef long long ll;
+typedef pair<int, int> pii;
 
-vector<set<ullong>> adjList;
-vector<bool> visited;
+const int MAXN = 2e5+5;
 
-void dfs(int node) {
-    visited[node] = true;
+int parent[MAXN], sz[MAXN], comp;
+set<pii> broken_edges;
+vector<pii> edges, broken;
+vector<int> ans;
 
-    for (int neighbor : adjList[node]) {
-        if (!visited[neighbor]) {
-            dfs(neighbor);
-        }
+int find(int v){
+    if(parent[v]==v) return v;
+    return parent[v] = find(parent[v]);
+}
+
+void join(int a, int b){
+    a = find(a);
+    b = find(b);
+    if(a!=b){
+        if(sz[a]<sz[b]) swap(a,b);
+        parent[b] = a;
+        sz[a] += sz[b];
+        comp--;
     }
 }
 
-int countComponents(int N) {
-    int components = 0;
-    visited.assign(N + 1, false);
-
-    for (int i = 1; i <= N; i++) {
-        if (!visited[i]) {
-            dfs(i);
-            components++;
+int main(){
+    ios::sync_with_stdio(0);
+    cin.tie(0);
+    int n, m, k;
+    cin >> n >> m >> k;
+    for(int i=1;i<=n;i++){
+        parent[i] = i;
+        sz[i] = 1;
+    }
+    comp = n;
+    for(int i=0;i<m;i++){
+        int a, b;
+        cin >> a >> b;
+        edges.push_back({a,b});
+    }
+    for(int i=0;i<k;i++){
+        int a, b;
+        cin >> a >> b;
+        broken.push_back({a,b});
+        broken_edges.insert({a,b});
+        broken_edges.insert({b,a});
+    }
+    for(auto p: edges){
+        int u = p.first, v = p.second;
+        if(broken_edges.find({u,v}) == broken_edges.end()){
+            join(u,v);
         }
     }
-
-    return components;
-}
-
-void bfs(ullong start) {
-    list<ullong> q;
-    q.push_back(start);
-    visited[start] = true;
-
-    while (!q.empty()) {
-        ullong node = q.front();
-        q.pop_front();
-
-        for (auto neighbor : adjList[node]) {
-            if (!visited[neighbor]) {
-                visited[neighbor] = true;
-                q.push_back(neighbor);
-            }
-        }
+    for(int i=k-1;i>=0;i--){
+        ans.push_back(comp);
+        join(broken[i].first, broken[i].second);
     }
-}
-
-int main() {
-    ullong N, M, K;
-    cin >> N >> M >> K;
-
-    adjList = vector<set<ullong>>(N + 1);
-
-    for (ullong i = 0; i < M; i++) {
-        ullong A, B;
-        cin >> A >> B;
-        adjList[A].insert(B);
-        adjList[B].insert(A);
-    }
-
-    for (ullong i = 0; i < K; i++) {
-        ullong A, B;
-        cin >> A >> B;
-
-        adjList[A].erase(B);
-        adjList[B].erase(A);
-
-        ullong components = 0; //countComponents(N);
-        visited = vector<bool>(N + 1, false);
-        for (ullong j = 1; j <= N; j++) {
-            if (!visited[j]) {
-                bfs(j);
-                components++;
-            }
-        }
-        cout << components << " ";
+    for(int i=k-1;i>=0;i--){
+        cout << ans[i] << " ";
     }
     cout << endl;
-
     return 0;
 }
+
